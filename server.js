@@ -12,7 +12,7 @@ let server = net.createServer(socket => {
     for (let i = 0; i < clients.length; i++) {
         clients[i].write(`Client ${clients.indexOf(socket).toString()} Connected.`);
     }
-    socket.write(`welcome to the chatroom, you are Client ${clients.indexOf(socket).toString()}.`);
+    socket.write(`welcome to the chat-room, you are Client ${clients.indexOf(socket).toString()}.`);
     socket.on('data', data => {
         console.log(`Client ${clients.indexOf(socket).toString()}: ${data}`);
         handleData(data, socket);
@@ -41,11 +41,15 @@ server.on(`error`, (err)  => {
     throw err;
 });
 server.on('data', data => {
-    console.log(`Client: ${data}`);
     handleData(data)
 });
 function handleData(data, socket){
     if (data) {
+        if (data.toString() === '/help\n') {
+            socket.write(`\nCommands:\n`);
+            socket.write(`'/help' - list commands. Usage: 'help'\n`);
+            socket.write(`'/w' - whisper to specified client. Usage: '/w # text'\n`);
+        } else
         for (let i = 0; i < clients.length; i++) {
             if (clients[i] !== clients[clients.indexOf(socket)]) {
                 if (data.includes(`/w `)) {
@@ -55,7 +59,7 @@ function handleData(data, socket){
                 } else if (clients[i] !== socket) {
                     clients[i].write(`Client ${clients.indexOf(socket).toString()}: ${data}`);
                 } else {
-                    console.log('InValid Client');
+                    console.log('Invalid Client');
                 }
             }
         }

@@ -28,7 +28,3 @@ process.stdin.on('readable', () => {
 process.stdin.on('end', () => {
     process.stdout.write('end');
 });
-process.on('SIGTERM', () => {
-    console.info('SIGTERM signal received.');
-    process.exit();
-});
