@@ -2,19 +2,32 @@ const fs = require('fs');
 const net = require('net');
 let clients = [];
 let messages = [];
+let users = [];
+let adminpword = 'schlenker';
 let server = net.createServer(socket => {
     clients.push(socket);
-    console.log(`Client ${clients.indexOf(socket).toString()} Connected.`);
-    messages.push(`Client ${clients.indexOf(socket).toString()} Connected.\n`);
+    users.push('empty');
+    console.log(`Client ${clients.indexOf(socket).toString()} Connected. `);
+    messages.push(`Client ${clients.indexOf(socket).toString()} Connected. `);
     fs.writeFile('chat-log.txt', messages, 'utf8', function (err) {
         if (err) return console.log(err);
     });
     for (let i = 0; i < clients.length; i++) {
-        clients[i].write(`Client ${clients.indexOf(socket).toString()} Connected.`);
+        clients[i].write(`Client ${clients.indexOf(socket).toString()} Connected. `);
     }
     socket.write(`welcome to the chat-room, you are Client ${clients.indexOf(socket).toString()}.`);
-    socket.on('data', data => {
-        console.log(`Client ${clients.indexOf(socket).toString()}: ${data}`);
+    socket.on('data', data =>  {
+        for (let i = 0; i < clients.length; i++) {
+            if (clients[i] === socket) {
+                if (users[i] !== 'empty') {
+                    console.log(`${users[i]}: ${data}`);
+                } else
+                {
+                    console.log(`Client ${clients.indexOf(socket).toString()}: ${data}`);
+                }
+            }
+        }
+
         handleData(data, socket);
         messages.push(`Client ${clients.indexOf(socket).toString()}: ${data}`);
         fs.writeFile('chat-log.txt', messages, 'utf8', function (err) {
@@ -49,12 +62,30 @@ function handleData(data, socket){
             socket.write(`\nCommands:\n`);
             socket.write(`'/help' - list commands. Usage: 'help'\n`);
             socket.write(`'/w' - whisper to specified client. Usage: '/w # text'\n`);
+        } else if (data.toString() === '/clientlist\n') {
+            socket.write('Client List:');
+            for (let i = 0; i < clients.length; i++) {
+                socket.write(`Client ${clients[i].index}`)
+            }
         } else
         for (let i = 0; i < clients.length; i++) {
+            if (clients[i] === socket) {
+                if (data.includes(`/username `)) {
+                    users[i] = data.toString().slice(10, data.length).trim();
+
+                    console.log(users[i]);
+                    console.log(users);
+                }
+            } else
             if (clients[i] !== clients[clients.indexOf(socket)]) {
                 if (data.includes(`/w `)) {
+                    console.log(`Data includes /w`);
                     if (data.toString().slice(0, 4) === (`/w ${clients.indexOf(clients[i])}`)) {
                         clients[i].write(`Client ${clients.indexOf(socket)} whispered: ${data.slice(5, data.length)}`);
+                    } else if (data.toString().slice(0, 4) === (`/w ${users.indexOf(users[i])}`)) {
+                        if (users[clients.indexOf(socket)] !== 'empty') {
+                            clients[i].write(`${users[clients.indexOf(socket)]} whispered: ${data}`);
+                        }
                     }
                 } else if (clients[i] !== socket) {
                     clients[i].write(`Client ${clients.indexOf(socket).toString()}: ${data}`);
