@@ -4,6 +4,7 @@ let clients = [];
 let messages = [];
 let users = [];
 let adminpword = 'schlenker';
+let clientlist = [];
 let server = net.createServer(socket => {
     clients.push(socket);
     users.push('empty');
@@ -62,6 +63,8 @@ function handleData(data, socket){
             socket.write(`\nCommands:\n`);
             socket.write(`'/help' - list commands. Usage: 'help'\n`);
             socket.write(`'/w' - whisper to specified client. Usage: '/w # text'\n`);
+            socket.write(`'/clientlist' - list connected clients. Usage: '/clientlist'`);
+            socket.write(`'/username' - assign yourself a username. Usage: '/username insertNameHere'`);
         } else if (data.toString() === '/clientlist\n') {
             socket.write('Client List:');
             for (let i = 0; i < clients.length; i++) {
@@ -75,6 +78,14 @@ function handleData(data, socket){
 
                     console.log(users[i]);
                     console.log(users);
+                } else if (data.includes(`/clientlist`)) {
+                    if (data.toString().slice(0, 12) === `/clientlist`) {
+                        clientlist = [];
+                        for (let k = 0; k < clients.length; k++) {
+                            clientlist.push(k);
+                        }
+                        socket.write(`By Client ID: ${clientlist}\n By Username: ${users}`.toString());
+                    }
                 }
             } else
             if (clients[i] !== clients[clients.indexOf(socket)]) {

@@ -6,7 +6,7 @@ client.on('data', (data) => {
     console.log(data.toString());
 });
 client.on('end', () => {
-    console.log('Server Terminated.');
+    console.log('Disconnected.');
     client.end();
     console.clear();
     process.exit();
